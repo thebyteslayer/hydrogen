@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://skillicons.dev/icons?i=rust" />
+  <img src="https://skillicons.dev/icons?i=rust,docker,kubernetes" />
 </p>
 
 <h1 align="center">Hydrogen</h1>
