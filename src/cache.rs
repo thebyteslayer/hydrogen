@@ -81,6 +81,12 @@ impl Hydrogen {
         Ok(existed)
     }
 
+    pub async fn keys(&self) -> CacheResult<Vec<String>> {
+        let storage = self.storage.read().await;
+        let keys: Vec<String> = storage.keys().cloned().collect();
+        Ok(keys)
+    }
+
 
 
 
