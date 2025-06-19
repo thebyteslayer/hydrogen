@@ -1,7 +1,11 @@
 [package]
 name = "hydrogen"
-version = "1.0.0"
+version = "1.1.0"
 edition = "2024"
+
+[[bin]]
+name = "hydrogen"
+path = "src/server.rs"
 
 [dependencies]
 tokio = { version = "1.40", features = ["full"] }
