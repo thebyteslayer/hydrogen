@@ -2,14 +2,17 @@
 // A scalable and lightweight Key Value Cache written in Rust
 
 mod api;
+mod api_log;
 mod cache;
-mod environment;
-mod logging;
+mod cluster;
+mod configuration;
+mod node_id;
+mod startup_log;
 
 use api::TcpApiServer;
 use cache::Hydrogen;
-use environment::HydrogenConfig;
-use logging::display_startup_info;
+use configuration::HydrogenConfig;
+use startup_log::display_startup_info;
 use std::sync::Arc;
 use tracing::error;
 use tracing_subscriber;

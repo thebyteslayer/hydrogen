@@ -2,7 +2,7 @@
 // A scalable and lightweight Key Value Cache written in Rust
 
 use crate::cache::{CacheError, Hydrogen};
-use crate::logging::{log_set_endpoint, log_get_endpoint, log_delete_endpoint, log_invalid_endpoint, log_invalid_utf8};
+use crate::api_log::{log_set_endpoint, log_get_endpoint, log_delete_endpoint, log_invalid_endpoint, log_invalid_utf8};
 use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::net::{TcpListener, TcpStream};

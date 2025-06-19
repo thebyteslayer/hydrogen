@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
 use thiserror::Error;
+use crate::cluster;
 
 #[derive(Debug, Error)]
 pub enum ConfigError {
@@ -14,6 +15,8 @@ pub enum ConfigError {
     TomlParse(#[from] toml::de::Error),
     #[error("TOML serialization error: {0}")]
     TomlSerialize(#[from] toml::ser::Error),
+    #[error("JSON serialization error: {0}")]
+    JsonSerialize(#[from] serde_json::Error),
 }
 
 type ConfigResult<T> = Result<T, ConfigError>;
@@ -24,6 +27,8 @@ pub struct HydrogenConfig {
     pub bind_ip: String,
     #[serde(rename = "bind-port")]
     pub bind_port: u16,
+    pub cluster_enabled: bool,
+    pub whisper_timeout: u32,
 }
 
 impl Default for HydrogenConfig {
@@ -31,6 +36,8 @@ impl Default for HydrogenConfig {
         Self {
             bind_ip: "0.0.0.0".to_string(),
             bind_port: 1825,
+            cluster_enabled: false,
+            whisper_timeout: 1,
         }
     }
 }
@@ -43,13 +50,19 @@ impl HydrogenConfig {
     pub fn load_or_create() -> ConfigResult<Self> {
         let config_path = "hydrogen.toml";
         
-        if Path::new(config_path).exists() {
-            Self::load_and_heal(config_path)
+        let config = if Path::new(config_path).exists() {
+            Self::load_and_heal(config_path)?
         } else {
             let default_config = Self::default();
             default_config.save_to_file(config_path)?;
-            Ok(default_config)
+            default_config
+        };
+        
+        if config.cluster_enabled {
+            cluster::generate_cluster_file(&config)?;
         }
+        
+        Ok(config)
     }
 
     fn load_and_heal(path: &str) -> ConfigResult<Self> {
@@ -82,6 +95,12 @@ impl HydrogenConfig {
             if let Some(toml::Value::Integer(port)) = table.get("bind-port") {
                 config.bind_port = *port as u16;
             }
+            if let Some(toml::Value::Boolean(enabled)) = table.get("cluster_enabled") {
+                config.cluster_enabled = *enabled;
+            }
+            if let Some(toml::Value::Integer(timeout)) = table.get("whisper_timeout") {
+                config.whisper_timeout = *timeout as u32;
+            }
         }
         
         Ok(config)
@@ -91,12 +110,9 @@ impl HydrogenConfig {
         config
     }
 
-
-
     fn save_to_file(&self, path: &str) -> ConfigResult<()> {
         let content = toml::to_string_pretty(self)?;
         fs::write(path, content)?;
         Ok(())
     }
-}
-
+} 
